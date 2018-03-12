@@ -1,0 +1,31 @@
+ # A query was made with advanced parameters "(((((((((homo sapiens[Organism])) NOT "mrna"[Filter])) NOT Chromosome[Text Word])) NOT mitochondrion[filter]) NOT circular[Text Word]) AND "Homo sapiens"[porgn:__txid9606] AND (kinase[text word]) AND (complete cds[text word]) NOT(spliced [text word]) "
+ 
+ # Read the accession numbers from the seq file downloaded after a genbank query. Complete, unspliced cds of human kinases are searched for in this case.
+ an<-scan("hs_kinase.seq",what="character")
+ 
+ # Download the raw fasta sequences from genbank as characters
+ seq<-read.Genbank(an,as.character=TRUE,species.names=FALSE)
+
+ # Initiate a vector of length equal to that of the number of sequences in the downloaded collection.
+ uncertain<-1:length(seq)
+ 
+ # Tag the sequences with only four types of nucleotides ATCG
+ for(i in 1:length(seq)){uncertain[i]=length(table(seq[i]))<5}
+ 
+ # Wash the sequence list, the length of wseq is smaller than that of seq now.
+ wseq<-seq[uncertain==1]
+ 
+ # Calculate CG content of all sequences in wseq.
+ CG<-1:length(wseq)
+ for(i in 1:length(wseq)){CG[i]=(table(wseq[i])[2]+table(wseq[i])[3])/length(wseq[[i]])}
+ 
+ # Calculate CG3 content of all sequences in wseq.
+ CG3<-1:length(wseq)
+ len<-1:length(wseq)
+ for(i in 1:length(wseq)){len[i]<-length(wseq[[i]])}
+ for(i in 1:length(wseq)){CG3[i]=(table(wseq[[i]][seq(3,len[i],by=3)])[2]+table(wseq[[i]][seq(3,len[i],by=3)])[3])*3/length(wseq[[i]])}
+ 
+ # Plot CG3 against CG.
+ plot(CG3,CG)
+ abline(fit(CG3~CG))
+ 
